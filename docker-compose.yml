@@ -1,5 +1,37 @@
 services:
 
+  cdc-oracle:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    container_name: cdc-oracle
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PWD: Admin123
+      ORACLE_CHARACTERSET: AL32UTF8
+      ORACLE_EDITION: EXPRESS
+    volumes:
+      - ./init-scripts:/opt/oracle/scripts/startup
+      - oracle_data_cdc:/opt/oracle/oradata
+    networks:
+      - kafka-fullstack
+
+  cdc-postgres:
+    image: postgres:16
+    container_name: cdc-postgres
+    ports:
+      - 5168:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    volumes:
+      - pg_data_cdc:/var/lib/postgresql/data
+    networks:
+      - kafka-fullstack
+
   kafka-1:
     image: confluentinc/cp-kafka:7.8.0
     container_name: kafka-1
@@ -32,6 +64,7 @@ services:
     volumes:
       - ./secrets:/etc/kafka/secrets
       - ./config:/etc/kafka/config
+      - kafka_1_vol:/var/lib/kafka/data
     networks:
       - kafka-fullstack
 
@@ -67,6 +100,7 @@ services:
     volumes:
       - ./secrets:/etc/kafka/secrets
       - ./config:/etc/kafka/config
+      - kafka_2_vol:/var/lib/kafka/data
     networks:
       - kafka-fullstack
 
@@ -102,6 +136,7 @@ services:
     volumes:
       - ./secrets:/etc/kafka/secrets
       - ./config:/etc/kafka/config
+      - kafka_3_vol:/var/lib/kafka/data
     networks:
       - kafka-fullstack
 
@@ -149,6 +184,7 @@ services:
     volumes:
       - ./secrets:/etc/kafka/secrets
       - ./config:/etc/kafka/config
+      - kafka_data:
     networks:
       - kafka-fullstack
 
@@ -236,8 +272,9 @@ services:
     volumes:
       - ./secrets:/etc/kafka/secrets
       - ./config:/etc/kafka/config
-      - ./volumes/data:/data
       - ./csv-data/:/csv-data/
+      - debezium_plugins:/kafka/connect/plugins
+      - debezium_data:/kafka/data
     networks:
       - kafka-fullstack
 
@@ -302,9 +339,16 @@ services:
       - kafka-fullstack
 
 volumes:
+  kafka_1_vol:
+  kafka_2_vol:
+  kafka_3_vol:
   kafka-ui-data:
+  pg_data_cdc:
+  oracle_data_cdc:
+  debezium_plugins:
+  debezium_data:
 
 networks:
   kafka-fullstack:
     external: true
-    name: kakfa-fullstack
+    name: kafka-fullstack
