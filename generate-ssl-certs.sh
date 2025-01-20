@@ -3,12 +3,18 @@
 # Set consistent password
 PASSWORD="password123"
 
+# Set the IP address to include in SANs
+IP_ADDRESS="202.178.125.77"
+
 echo "Generating certificates with password: $PASSWORD"
+
+# Create secrets directory if it doesn't exist
+mkdir -p secrets
 
 # Generate CA
 keytool -genkeypair \
   -alias ca \
-  -dname "CN=chhaya, OU=Engineering, O=Company, L=City, ST=State, C=US" \
+  -dname "CN=ca.cstad.edu.kh, OU=Engineering, O=Company, L=City, ST=State, C=US" \
   -keystore secrets/ca.keystore.jks \
   -keypass $PASSWORD \
   -storepass $PASSWORD \
@@ -25,11 +31,11 @@ keytool -exportcert \
   -file secrets/ca.crt \
   -rfc
 
-# Generate server keystore with multiple DNS names
+# Generate server keystore with multiple DNS names and IP address
 keytool -genkeypair \
   -alias server \
-  -dname "CN=chhaya, OU=Engineering, O=Company, L=City, ST=State, C=US" \
-  -ext "SAN=DNS:kafka-1,DNS:kafka-2,DNS:kafka-3,DNS:schema-registry,DNS:kafka-ui,DNS:debezium-kafka-connect,DNS:localhost,DNS:kafka.istad.co,IP:202.178.125.77" \
+  -dname "CN=kafka-kraft, OU=Engineering, O=Company, L=City, ST=State, C=US" \
+  -ext "SAN=DNS:kafka-1,DNS:kafka-2,DNS:kafka-3,DNS:schema-registry,DNS:kafka-ui,DNS:debezium-kafka-connect,DNS:localhost,DNS:kafka-kraft.cstad.edu.kh,IP:${IP_ADDRESS}" \
   -keystore secrets/kafka.server.keystore.jks \
   -keypass $PASSWORD \
   -storepass $PASSWORD \
@@ -59,10 +65,9 @@ keytool -keystore secrets/ca.keystore.jks \
   -gencert \
   -infile secrets/server.csr \
   -outfile secrets/server.crt \
-  -ext "SAN=DNS:kafka-1,DNS:kafka-2,DNS:kafka-3,DNS:schema-registry,DNS:kafka-ui,DNS:debezium-kafka-connect,DNS:localhost,DNS:kafka.istad.co,IP:202.178.125.77" \
+  -ext "SAN=DNS:kafka-1,DNS:kafka-2,DNS:kafka-3,DNS:schema-registry,DNS:kafka-ui,DNS:debezium-kafka-connect,DNS:localhost,DNS:kafka-kraft.cstad.edu.kh,IP:${IP_ADDRESS}" \
   -storepass $PASSWORD \
   -keypass $PASSWORD \
-  -ext bc=ca:false \
   -rfc
 
 # Import CA and signed certificate into server keystore
@@ -83,7 +88,7 @@ keytool -keystore secrets/kafka.server.keystore.jks \
   -noprompt
 
 # Clean up temporary files
-rm secrets/*.csr secrets/*.crt 2>/dev/null || true
+rm secrets/*.csr secrets/server.crt 2>/dev/null || true
 
 echo "Certificate generation completed successfully. Files created in secrets/:"
 ls -l secrets/
