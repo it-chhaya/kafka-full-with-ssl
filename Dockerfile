@@ -1,5 +1,7 @@
 FROM quay.io/debezium/connect:3.0
 
+USER root
+
 ENV PLUGIN_DIR=/kafka/connect/plugins
 ENV KAFKA_CONNECT_ES_DIR=$PLUGIN_DIR/kafka-connect-elasticsearch
 ENV KAFKA_CONNECT_SPOOLDIR_DIR=$PLUGIN_DIR/kafka-connect-spooldir
@@ -62,5 +64,11 @@ COPY ./confluentinc-kafka-connect-elasticsearch-14.1.2/lib/ $KAFKA_CONNECT_ES_DI
 RUN mkdir $KAFKA_CONNECT_SPOOLDIR_DIR
 COPY ./jcustenborder-kafka-connect-spooldir-2.0.66/lib/ $KAFKA_CONNECT_SPOOLDIR_DIR
 
-# Deploy PostgreSQL JDBC Driver
-RUN cd /kafka/libs && curl -sO https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+# Deploy PostgreSQL and Oracle JDBC Driver 
+RUN cd /kafka/libs && \
+    curl -sO https://jdbc.postgresql.org/download/postgresql-42.7.3.jar && \
+    curl https://maven.xwiki.org/externals/com/oracle/jdbc/ojdbc8/12.2.0.1/ojdbc8-12.2.0.1.jar -o ojdbc8-12.2.0.1.jar
+
+# Install the required library files
+RUN curl https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basiclite-linux.x64-19.6.0.0.0dbru.zip -o /tmp/ic.zip && \
+    unzip /tmp/ic.zip -d /usr/share/java/debezium-connector-oracle/
