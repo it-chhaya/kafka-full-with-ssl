@@ -64,11 +64,20 @@ COPY ./confluentinc-kafka-connect-elasticsearch-14.1.2/lib/ $KAFKA_CONNECT_ES_DI
 RUN mkdir $KAFKA_CONNECT_SPOOLDIR_DIR
 COPY ./jcustenborder-kafka-connect-spooldir-2.0.66/lib/ $KAFKA_CONNECT_SPOOLDIR_DIR
 
+# Old Config without XML driver
 # Deploy PostgreSQL and Oracle JDBC Driver 
+# RUN cd /kafka/libs && \
+#     curl -sO https://jdbc.postgresql.org/download/postgresql-42.7.3.jar && \
+#     curl https://maven.xwiki.org/externals/com/oracle/jdbc/ojdbc8/12.2.0.1/ojdbc8-12.2.0.1.jar -o ojdbc8-12.2.0.1.jar
+
+# New Config for XML driver
+# Deploy PostgreSQL and Oracle JDBC Driver with XML Support
 RUN cd /kafka/libs && \
     curl -sO https://jdbc.postgresql.org/download/postgresql-42.7.3.jar && \
-    curl https://maven.xwiki.org/externals/com/oracle/jdbc/ojdbc8/12.2.0.1/ojdbc8-12.2.0.1.jar -o ojdbc8-12.2.0.1.jar
+    curl -sO https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/19.8.0.0/ojdbc8-19.8.0.0.jar -o ojdbc8-12.2.0.1.jar && \
+    curl -sO https://repo1.maven.org/maven2/com/oracle/database/xml/xdb/19.8.0.0/xdb-19.8.0.0.jar -o xdb-19.8.0.0.jar && \
+    curl -sO https://repo1.maven.org/maven2/com/oracle/database/xml/xmlparserv2/19.8.0.0/xmlparserv2-19.8.0.0.jar -o xmlparserv2-19.8.0.0.jar
 
 # Install the required library files
-RUN curl https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basiclite-linux.x64-19.6.0.0.0dbru.zip -o /tmp/ic.zip && \
+RUN curl https://download.oracle.com/otn_software/linux/instantclient/2112000/el9/instantclient-basic-linux.x64-21.12.0.0.0dbru.el9.zip -o /tmp/ic.zip && \
     unzip /tmp/ic.zip -d /usr/share/java/debezium-connector-oracle/
