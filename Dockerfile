@@ -5,6 +5,7 @@ USER root
 ENV PLUGIN_DIR=/kafka/connect/plugins
 ENV KAFKA_CONNECT_ES_DIR=$PLUGIN_DIR/kafka-connect-elasticsearch
 ENV KAFKA_CONNECT_SPOOLDIR_DIR=$PLUGIN_DIR/kafka-connect-spooldir
+ENV KAFKA_CONNECT_JDBC_SOURCE_DIR=$PLUGIN_DIR/kafka-connect-jdbc-source
 
 # Create the plugin directory if it doesn't exist
 RUN mkdir -p $PLUGIN_DIR
@@ -63,6 +64,9 @@ COPY ./confluentinc-kafka-connect-elasticsearch-14.1.2/lib/ $KAFKA_CONNECT_ES_DI
 
 RUN mkdir $KAFKA_CONNECT_SPOOLDIR_DIR
 COPY ./jcustenborder-kafka-connect-spooldir-2.0.66/lib/ $KAFKA_CONNECT_SPOOLDIR_DIR
+
+RUN mkdir $KAFKA_CONNECT_JDBC_SOURCE_DIR
+COPY ./confluentinc-kafka-connect-jdbc-10.8.4/lib/ $KAFKA_CONNECT_JDBC_SOURCE_DIR
 
 # Old Config without XML driver
 # Deploy PostgreSQL and Oracle JDBC Driver 
